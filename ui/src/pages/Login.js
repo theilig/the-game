@@ -8,8 +8,7 @@ import { useAuth } from "../context/auth";
 function Login(props) {
     const [isLoggedIn, setLoggedIn] = useState(false);
     const [lastError, setLastError] = useState("");
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
+    const [name, setName] = useState("")
     const { setAuthTokens } = useAuth();
     const referrer = props.location.state ?
         (props.location.state.referrer.pathname || '/') :
@@ -19,8 +18,7 @@ function Login(props) {
         if (validateForm()) {
             axios("/api/login", {
                 data: {
-                    email,
-                    password,
+                    name
                 },
                 method: "post",
                 headers: {'X-Requested-With': 'XMLHttpRequest'},
@@ -41,12 +39,8 @@ function Login(props) {
 
     function validateForm() {
         let validated = true;
-        if (password.length < 0) {
-            setLastError("You need to provide a password");
-            validated = false;
-        }
-        if (email.length === 0 || !EmailRegex.test(email)) {
-            setLastError("you need to sign in with an email");
+        if (name.length === 0) {
+            setLastError("you need to sign in with a name");
             validated = false;
         }
         return validated;
@@ -61,25 +55,15 @@ function Login(props) {
             <Logo src={logoImg} />
             <Form>
                 <Input
-                    type="email"
-                    value={email}
+                    type="name"
+                    value={name}
                     onChange={e => {
-                        setEmail(e.target.value);
+                        setName(e.target.value);
                     }}
-                    placeholder="email"
+                    placeholder="name"
                 />
-                <Input
-                    type="password"
-                    value={password}
-                    onChange={e => {
-                        setPassword(e.target.value);
-                    }}
-                    placeholder="password"
-                />
-                <Button onClick={postLogin}>Sign In</Button>
+                <Button onClick={postLogin}>Play</Button>
             </Form>
-            <Link to="/signup">Sign Up for New Account</Link>
-            { lastError && <Error>{lastError}</Error> }
         </Card>
     );
 }
