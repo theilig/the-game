@@ -33,14 +33,28 @@ function GameList() {
     const [ gameList, setGameList ] = useState({games:[]});
     const [ lastError, setLastError ] = useState( "" );
     const [ selectedGame, setSelectedGame ] = useState( 0 )
-    const [ creatingGame, setCreatingGame ] = useState( false )
     function logOut() {
         setAuthTokens();
         setLastError("Logged out");
     }
 
     function createGame() {
-        setCreatingGame(true)
+        axios("/api/createGame", {
+            method: "post",
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Authorization': 'Bearer ' + authTokens.token
+            }
+        }).then(result => {
+            setSelectedGame(result.data.gameId)
+        }).catch(error => {
+            if (error.response) {
+                setLastError(error.response.data)
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                setLastError("Problem creating the game, please try again");
+            }
+        });
     }
 
     useEffect(() => {
@@ -64,10 +78,6 @@ function GameList() {
 
     if (lastError) {
         return (<Redirect to="/login" />);
-    }
-
-    if (creatingGame) {
-        return (<Redirect push to="/createGame" />)
     }
 
     if (selectedGame > 0) {
