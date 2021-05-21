@@ -6,9 +6,7 @@
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /                           controllers.FrontendController.index
-POST    /api/login                  controllers.LoginController.processLoginAttempt
 GET     /api/games                  controllers.SetupController.showGameList
-GET     /api/game/:resource         controllers.GameController.getGame(resource: String)
-POST    /api/game/:resource         controllers.GameController.setGame(resource: String)
+GET     /api/game                   controllers.GameSocket.socket
 POST    /api/createGame             controllers.SetupController.newGame
 GET     /assets/*file               controllers.FrontendController.assetOrDefault(file)

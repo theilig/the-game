@@ -28,4 +28,8 @@ class UserDao @Inject() (
     db.run(createUserQuery += newUser)
   }
 
+  def findById(userId: Int): Future[Option[Tables.UserRow]] = {
+    db.run(Users.filter(_.userId === userId).result.headOption)
+  }
+
 }

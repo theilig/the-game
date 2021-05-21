@@ -1,9 +1,9 @@
 package models.game
 
-import controllers.game.stage.{NotStarted, Stage}
+import controllers.game.stage.{GameEnded, NotStarted, Stage}
 import models.schema.Tables
 import models.User
-import play.api.libs.json.{JsObject, JsString, JsSuccess, JsValue, Json, Reads, Writes}
+import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, JsSuccess, JsValue, Json, Reads, Writes}
 
 import scala.annotation.tailrec
 
@@ -40,7 +40,50 @@ case class State(
         )
     }
   }
-  def projection(userId: Int): JsObject = ???
+
+  def updatePlayer(userId: Int)(transform: Player => Player): State = {
+    copy(players = players.map {
+      case p if p.userId == userId => transform(p)
+      case p => p
+    })
+  }
+
+  def projection(userId: Int): JsObject = {
+    stage match {
+      case GameEnded => JsObject(
+        Seq(
+          "players" -> Json.toJson(players),
+          "stage" -> Json.toJson(stage)
+        )
+      )
+      case NotStarted => JsObject(
+        Seq(
+          "players" -> Json.toJson(players),
+          "stage" -> Json.toJson(stage)
+        )
+      )
+      case _ =>
+        val playerList = players.map {
+          case p if p.userId == userId => JsObject(
+            Seq(
+              "hand" -> Json.toJson(p.hand),
+              "name" -> JsString(p.name),
+              "userId" -> JsNumber(p.userId)
+            )
+          )
+          case p => JsObject(Seq("userId" -> JsNumber(p.userId)))
+        }
+        JsObject(
+          Seq(
+            "players" -> JsArray(playerList),
+            "piles" -> Json.toJson(piles),
+            "deck" -> Json.toJson(deck),
+            "rules" -> Json.toJson(rules),
+            "stage" -> Json.toJson(stage)
+          )
+        )
+    }
+  }
 }
 
 object State {
@@ -50,7 +93,7 @@ object State {
       (json \ "deck").as[Deck],
       (json \ "piles").as[List[Pile]],
       (json \ "rules").as[Rules],
-      Stage((json \ "stage").as[String])
+      (json \ "stage").as[Stage]
     ))
   }
   implicit val stateFormat: Writes[State] = (state: State) => JsObject(
@@ -58,7 +101,8 @@ object State {
       "players" -> Json.toJson(state.players),
       "deck" -> Json.toJson(state.deck),
       "piles" -> Json.toJson(state.piles),
-      "stage" -> JsString(state.stage.getClass.getSimpleName.replace("$", ""))
+      "rules" -> Json.toJson(state.rules),
+      "stage" -> Json.toJson(state.stage)
     )
   )
 

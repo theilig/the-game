@@ -22,7 +22,7 @@ sealed trait CurrentPlayerMessage extends Message {
   override def checkPermissionError(user: User, state: State): Option[GameError] = {
     state.stage match {
       case p : PlayerStage =>
-        if (user.userId != p.currentPlayer.userId) {
+        if (p.currentPlayer(state).exists(_.userId == user.userId)) {
           Some(GameError("It is not your turn"))
         } else {
           None

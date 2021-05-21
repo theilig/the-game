@@ -30,7 +30,7 @@ class Jwt @Inject() (config: Configuration) {
     signedJWT.serialize()
   }
 
-  private def decodePayload(token: String): Option[User] = {
+  def decodePayload(token: String): Option[User] = {
     Try({
       val signedJWT = SignedJWT.parse(token)
       val verifier = new MACVerifier(JwtSecretKey)
