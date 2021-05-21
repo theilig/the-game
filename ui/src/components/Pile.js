@@ -5,6 +5,7 @@ import Up from "../img/Up.png"
 import Down from "../img/Down.png"
 import HandCard from "./HandCard";
 import styled from "styled-components";
+import cardImages from "../img/cards/cards";
 const PileDirection = styled.img`
     margin-bottom: -10px;
     margin-left: 21px;
@@ -17,10 +18,14 @@ function Pile(props) {
     const [, drop] = useDrop({
         accept: ['Card'],
         canDrop: ((item) => {
-            return true
+            if (props.direction === "Up") {
+                return item.card > props.topCard || item.card === props.topCard - 10
+            } else {
+                return item.card < props.topCard || item.card === props.topCard + 10
+            }
         }),
         drop: (c) => {
-            registerDrop(c.card, props.cards[0].data.sourceIndex)
+            registerDrop(c, props.index)
         }
     })
 
@@ -29,12 +34,26 @@ function Pile(props) {
         "Down": Down
     }
 
-    return (
-        <div ref={drop}>
-            <PileDirection src={cardMap[props.direction]} alt={props.direction} />
-            <HandCard card={props.topCard} />
-        </div>
-    )
+    if (props.topCardIndex) {
+        return (
+            <div ref={drop}>
+                <PileDirection src={cardMap[props.direction]} alt={props.direction}/>
+                <HandCard card={props.topCard} index={props.topCardIndex}/>
+            </div>
+        )
+    } else {
+        let style = {width: '70px', height: '100px', marginLeft: '10px', marginTop: '10px'}
+        return (
+            <div ref={drop}>
+                <PileDirection src={cardMap[props.direction]} alt={props.direction}/>
+                <div>
+                    <img style={style}
+                         src={cardImages[props.topCard]} title={props.topCard} alt={props.topCard}
+                    />
+                </div>
+            </div>
+        )
+    }
 }
 
 export default Pile;

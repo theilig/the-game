@@ -45,8 +45,6 @@ function Game() {
 
     useEffect(() => {
         const setState = (data) => {
-            setIsAttached({})
-            setPiled({})
             setGameState(data);
         }
 
@@ -110,19 +108,19 @@ function Game() {
         } else return false
     }
 
-    const resetAttached = (sourceIndex, newAttached, newUsing) => {
+    const resetAttached = (sourceIndex, newAttached, newPiled) => {
         if (newAttached[sourceIndex] != null) {
             let removePiled = [...piled[newAttached[sourceIndex]]]
             removePiled = removePiled.filter((c) => {
-                return c.data.sourceIndex !== sourceIndex
+                return c.index !== sourceIndex
             })
-            newUsing[newAttached[sourceIndex]] = removePiled
+            newPiled[newAttached[sourceIndex]] = removePiled
             newAttached[sourceIndex] = null
         }
     }
 
     const registerDrop = (source, targetIndex, resetTarget) => {
-        const sourceIndex = source.data.sourceIndex
+        const sourceIndex = source.index
         let newAttached = {...isAttached}
         let newPiled = {...piled}
         resetAttached(sourceIndex, newAttached, newPiled)
@@ -136,17 +134,36 @@ function Game() {
             piledList = [...piledList, source]
             newPiled[targetIndex] = piledList
         }
+        setPiled(newPiled)
+        setIsAttached(newAttached)
     }
 
     const getArrangement = (player, currentAttached, currentPiled) => {
         const hand = player.hand
         let cardArrangement = []
+        let cardsPlayed = 0
         hand.forEach((card, index) => {
             if (currentAttached[index + SourceIndexes.HandIndex] == null) {
-                cardArrangement.push(card)
+                cardArrangement.push({card: card, index: index})
+            } else {
+                cardsPlayed += 1
             }
         })
-        return cardArrangement
+        let pileArrangement = []
+        gameState.piles.forEach((pile, index) => {
+            let offset = SourceIndexes.PileOffset + index
+            if (currentPiled[offset] && currentPiled[offset].length > 0) {
+                pileArrangement.push({
+                    direction: pile.direction,
+                    cards: currentPiled[offset],
+                    topCard: currentPiled[offset][currentPiled[offset].length - 1].card,
+                    topCardIndex: currentPiled[offset][currentPiled[offset].length - 1].index
+                })
+            } else {
+                pileArrangement.push({direction: pile.direction, topCard: pile.topCard, cards: []})
+            }
+        })
+        return {cards: cardArrangement, piles: pileArrangement, cardsPlayed: cardsPlayed}
     }
 
     const renderGameStage = () => {

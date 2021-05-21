@@ -7,7 +7,12 @@ function HandCard(props) {
     const {registerDrop} = useGameState()
     const [,drag] = useDrag({
         type: 'Card',
-        item: {card: props.card}
+        item: props,
+        end: (item, monitor) => {
+            if (!monitor.didDrop()) {
+                registerDrop(item, null)
+            }
+        }
     })
 
     const refContainer = useRef(null)

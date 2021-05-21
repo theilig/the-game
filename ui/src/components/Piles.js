@@ -18,6 +18,7 @@ function Piles(props) {
                         direction={pile.direction}
                         topCard={pile.topCard}
                         index={SourceIndexes.PileOffset + index}
+                        topCardIndex={pile.topCardIndex}
                         key={index}
                     />
                 )
