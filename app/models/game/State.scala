@@ -1,6 +1,6 @@
 package models.game
 
-import controllers.game.stage.{GameEnded, NotStarted, Stage}
+import controllers.game.stage.{GameEnded, NotStarted, Playing, Stage}
 import models.schema.Tables
 import models.User
 import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, JsSuccess, JsValue, Json, Reads, Writes}
@@ -46,6 +46,40 @@ case class State(
       case p if p.userId == userId => transform(p)
       case p => p
     })
+  }
+
+  def updatePlayer(newPlayer: Player): State = {
+    updatePlayer(newPlayer.userId)(_ => newPlayer)
+  }
+
+  def finishTurn: State = {
+    val possiblePlayer = stage.currentPlayer(this)
+    val newState = possiblePlayer.map(p => {
+      val (player, newDeck) = fillPlayerHand(p, deck)
+      updatePlayer(player).copy(deck = newDeck)
+    }).getOrElse(this)
+    newState.nextState
+  }
+
+  def nextState: State = {
+    stage match {
+      case Playing(currentPlayer, _, _) =>
+        val nextPlayer =
+          (players ::: players).dropWhile(_.userId != currentPlayer).tail.dropWhile(p => p.hand.isEmpty).headOption
+        nextPlayer match {
+          case None => copy(stage = GameEnded)
+          case Some(player) if player.canPlay(piles) => copy(stage = Playing(player.userId, 0, rules.cardsToPlay))
+          case _ => copy(stage = GameEnded)
+        }
+    }
+  }
+
+  def putCardOnPile(card: Int, pileIndex: Int): State = {
+    copy(
+      piles = piles.take(pileIndex) :::
+        piles.drop(pileIndex).head.copy(topCard = card) :: piles.drop(pileIndex + 1),
+      players = players.map(p => p.copy(hand = p.hand.filterNot(_ == card)))
+    )
   }
 
   def projection(userId: Int): JsObject = {

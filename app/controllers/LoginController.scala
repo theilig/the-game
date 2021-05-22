@@ -19,7 +19,7 @@ class LoginController @Inject()(
   def processLoginAttempt: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     try {
       val loginAttempt = request.body.asJson.get.as[LoginAttempt]
-      val eventualUserRow = userDao.login(loginAttempt)
+      val eventualUserRow = userDao.login(loginAttempt, request.headers.get("x-forwarded-for").getOrElse("unknown"))
       eventualUserRow.map(userRow => {
         Ok(Json.toJson(models.Authentication(models.User(userRow), jwt.createToken(User(userRow)))))
       })

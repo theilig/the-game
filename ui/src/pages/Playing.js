@@ -26,7 +26,7 @@ function Playing(props) {
 
     const renderChoices = () => {
         const stage = gameState.stage
-        let currentPlayerId = gameState.players[stage.data.currentPlayer].userId
+        let currentPlayerId = stage.data.currentPlayerId
         if (parseInt(authTokens.user.userId) === currentPlayerId) {
             if (props.arrangement.cardsPlayed >= stage.data.needToPlay) {
                 return (

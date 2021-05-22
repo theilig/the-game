@@ -11,7 +11,7 @@ class GameSetup()(implicit ec: ExecutionContext) {
     val random = new Random
     val startingPlayerIndex = random.between(0, state.players.length)
     Future(state.fillPlayerHands().copy(
-      stage = new Playing(startingPlayerIndex, played = 0, needToPlay = state.rules.cardsToPlay)
+      stage = new Playing(state.players.drop(startingPlayerIndex).head.userId, played = 0, needToPlay = state.rules.cardsToPlay)
     ))
   }
 }

@@ -79,7 +79,7 @@ class GameActor(gameId: Int, gameDao: GameDao)
           }).recover {
             case t: Throwable => log.error(t.getMessage)
           }
-        case m if m.validate(currentState) => sendToStage(m)
+        case m => sendToStage(m)
         case _ => sender() ! GameError("Invalid Message")
       }
     })

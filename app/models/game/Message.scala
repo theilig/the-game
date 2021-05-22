@@ -4,7 +4,6 @@ import models.User
 import play.api.libs.json.{Format, JsError, JsObject, JsPath, JsResult, JsString, JsSuccess, Json, Reads, Writes}
 
 sealed trait Message {
-  def validate(state: State): Boolean = true
   def checkPermissionError(user: User, state: State): Option[GameError] = None
 }
 
@@ -23,9 +22,9 @@ sealed trait CurrentPlayerMessage extends Message {
     state.stage match {
       case p : PlayerStage =>
         if (p.currentPlayer(state).exists(_.userId == user.userId)) {
-          Some(GameError("It is not your turn"))
-        } else {
           None
+        } else {
+          Some(GameError("It is not your turn"))
         }
       case _ => Some(GameError("Unexpected message"))
     }
@@ -63,6 +62,12 @@ object RejectPlayer {
   implicit val rejectPlayerFormat: Format[RejectPlayer] = Json.format
 }
 
+case class PlayCards(plays: List[PilePlay]) extends CurrentPlayerMessage
+
+object PlayCards {
+  implicit val playCardsFormat: Format[PlayCards] = Json.format
+}
+
 case object GameOver extends Message
 
 case object LeaveGame extends Message
@@ -84,6 +89,7 @@ object Message {
           case "StartGame" => JsSuccess(StartGame)
           case "AcceptPlayer" => (JsPath \ "data").read[AcceptPlayer].reads(js)
           case "RejectPlayer" => (JsPath \ "data").read[RejectPlayer].reads(js)
+          case "PlayCards" => (JsPath \ "data").read[PlayCards].reads(js)
         }
       )
     },

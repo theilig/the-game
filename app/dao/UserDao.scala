@@ -20,12 +20,21 @@ class UserDao @Inject() (
   private val createUserQuery = Users returning Users.map(_.userId) into
     ((user, userId) => user.copy(userId = userId))
 
-  def login(loginAttempt: LoginAttempt): Future[Tables.UserRow] = {
-    val newUser = Tables.UserRow(
-      0,
-      loginAttempt.name
-    )
-    db.run(createUserQuery += newUser)
+  def login(loginAttempt: LoginAttempt, ip: String): Future[Tables.UserRow] = {
+    findByNameAndIp(loginAttempt.name, ip).flatMap({
+      case Some(userRow) => Future.successful(userRow)
+      case None =>
+        val newUser = Tables.UserRow(
+          0,
+          loginAttempt.name,
+          ip
+        )
+        db.run(createUserQuery += newUser)
+    })
+  }
+
+  def findByNameAndIp(name: String, ip: String): Future[Option[Tables.UserRow]] = {
+    db.run(Users.filter(row => {row.name === name && row.ip === ip}).result.headOption)
   }
 
   def findById(userId: Int): Future[Option[Tables.UserRow]] = {

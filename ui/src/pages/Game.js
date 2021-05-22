@@ -45,6 +45,33 @@ function Game() {
 
     useEffect(() => {
         const setState = (data) => {
+            const totalCards = (state) => {
+                let total = 0
+                if (!state || !state.players) {
+                    return total
+                }
+                state.players.forEach(p => {
+                    p.hand.forEach(c => total += c)
+                })
+                return total
+            }
+            let oldState = gameState
+            // need to reset when hand changes, or when pile that's attached changes
+            let oldHandSum = totalCards(oldState)
+            let newHandSum = totalCards(data)
+            let pileChanged = false
+            if (oldState && oldState.piles && data.piles) {
+                piled.keys.forEach(offset => {
+                    let index = offset - SourceIndexes.PileOffset
+                    if (oldState.piles[index].topCard !== data.piles[index].topCard) {
+                        pileChanged = true;
+                    }
+                })
+            }
+            if (pileChanged || oldHandSum !== newHandSum) {
+                setIsAttached({})
+                setPiled({})
+            }
             setGameState(data);
         }
 
@@ -103,8 +130,8 @@ function Game() {
         if (state && state.stage) {
             const stage = state.stage
             return stage.stage && stage.data &&
-                stage.data.currentPlayer != null &&
-                parseInt(authTokens.user.userId) === state.players[stage.data.currentPlayer].userId
+                stage.data.currentPlayerId != null &&
+                parseInt(authTokens.user.userId) === stage.data.currentPlayerId
         } else return false
     }
 
@@ -174,7 +201,7 @@ function Game() {
         let stage = gameState.stage
 
         let activePlayer = isActivePlayer(gameState)
-        if (player && player.hand.length > 0) {
+        if (player && player.hand.length > 0 && gameState.piles) {
             arrangement = getArrangement(
                 player,
                 isAttached,

@@ -42,8 +42,8 @@ object Stage {
   )
 }
 
-class PlayerStage(currentPlayer: Int) extends Stage {
+class PlayerStage(currentPlayerId: Int) extends Stage {
   override def receive(message: Message, user: User, state: State): Either[GameError, State] = Right(state)
 
-  override def currentPlayer(state: State): Option[Player] = state.players.find(_.userId == currentPlayer)
+  override def currentPlayer(state: State): Option[Player] = state.players.find(_.userId == currentPlayerId)
 }
