@@ -12,17 +12,20 @@ const PileDirection = styled.img`
     width: 50px;
 `;
 
-
 function Pile(props) {
     const {registerDrop} = useGameState()
+    const dropOk = (pile, card) => {
+        if (pile.direction === "Up") {
+            return card > pile.topCard || card === pile.topCard - 10
+        } else {
+            return card < pile.topCard || card === pile.topCard + 10
+        }
+    }
+
     const [, drop] = useDrop({
         accept: ['Card'],
         canDrop: ((item) => {
-            if (props.direction === "Up") {
-                return item.card > props.topCard || item.card === props.topCard - 10
-            } else {
-                return item.card < props.topCard || item.card === props.topCard + 10
-            }
+            return dropOk(props, item.card)
         }),
         drop: (c) => {
             registerDrop(c, props.index)

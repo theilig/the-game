@@ -107,11 +107,12 @@ case class State(
           )
           case p => JsObject(Seq("userId" -> JsNumber(p.userId)))
         }
+        val allCards = players.foldLeft(deck.cards)((cards, p) => cards ++ p.hand.toSet).toList.sorted
         JsObject(
           Seq(
             "players" -> JsArray(playerList),
             "piles" -> Json.toJson(piles),
-            "deck" -> Json.toJson(deck),
+            "deck" -> Json.toJson(allCards),
             "rules" -> Json.toJson(rules),
             "stage" -> Json.toJson(stage)
           )

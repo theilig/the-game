@@ -14,5 +14,5 @@ dist
 /.project
 /RUNNING_PID
 /.settings
-public
+/public
 .DS_Store

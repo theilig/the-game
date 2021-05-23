@@ -4,13 +4,21 @@ import { Button, Options } from "../components/InputElements"
 import {useGameState} from "../context/GameState";
 import PlayerHand from "../components/PlayerHand"
 import Piles from "../components/Piles"
-import {SourceIndexes} from "../components/SlotIndexes";
+import Deck from "../components/Deck"
 
 function Playing(props) {
     const { gameState, sendMessage } = useGameState()
     const { authTokens } = useAuth()
-    const playCards = () => {
-        let plays = props.arrangement.piles.map((p, index) => {
+    const dropOk = (pile, card) => {
+        if (pile.direction === "Up") {
+            return card > pile.topCard || card === pile.topCard - 10
+        } else {
+            return card < pile.topCard || card === pile.topCard + 10
+        }
+    }
+
+    const getPlays = () => {
+        return props.arrangement.piles.map((p, index) => {
             return {
                 pile: index,
                 cards: p.cards.map(c => {
@@ -18,23 +26,44 @@ function Playing(props) {
                 })
             }
         })
+    }
+    const playCards = () => {
         sendMessage({
             messageType: 'PlayCards',
-            data: {plays: plays}
+            data: {plays: getPlays()}
+        })
+    }
+
+    const endGame = () => {
+        sendMessage({
+            messageType: 'EndGame',
+            data: {plays: getPlays()}
         })
     }
 
     const renderChoices = () => {
         const stage = gameState.stage
         let currentPlayerId = stage.data.currentPlayerId
+        let cannotPlay = true
+        gameState.piles.forEach(p => {
+            props.arrangement.cards.forEach(c => {
+                if (dropOk(p, c.card)) {
+                    cannotPlay = false;
+                }
+            })
+        })
         if (parseInt(authTokens.user.userId) === currentPlayerId) {
+            let options = []
             if (props.arrangement.cardsPlayed >= stage.data.needToPlay) {
-                return (
-                    <Options>
-                        <Button onClick={() => playCards()}>Done</Button>
-                    </Options>
-                )
+                options.push(<Button onClick={() => playCards()}>Done</Button>)
+            } else if (cannotPlay) {
+                options.push(<Button onClick={() => endGame()}>End Game</Button>)
             }
+            return (
+                <Options>
+                    {options}
+                </Options>
+            )
         }
     }
 
@@ -43,6 +72,7 @@ function Playing(props) {
             <PlayerHand arrangement={props.arrangement.cards} />
             <Piles piles={props.arrangement.piles} />
             {renderChoices()}
+            <Deck />
         </div>
     )
 }
