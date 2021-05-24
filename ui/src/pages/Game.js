@@ -51,7 +51,9 @@ function Game() {
                     return total
                 }
                 state.players.forEach(p => {
-                    p.hand.forEach(c => total += c)
+                    if (p.hand) {
+                        p.hand.forEach(c => total += c)
+                    }
                 })
                 return total
             }

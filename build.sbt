@@ -1,8 +1,11 @@
+import com.typesafe.sbt.packager.docker.{Cmd, DockerStageBreak, ExecCmd}
+
 name := "TheGame"
  
 version := "1.0"
       
-lazy val `thegame` = (project in file(".")).enablePlugins(PlayScala)
+lazy val `thegame` = (project in file(".")).enablePlugins(PlayScala).enablePlugins(DockerPlugin)
+
 
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
       
@@ -30,4 +33,8 @@ libraryDependencies += "com.nimbusds" % "nimbus-jose-jwt" % "8.19"
 libraryDependencies += specs2 % Test
 
 unmanagedResourceDirectories in Test +=  baseDirectory ( _ /"target/web/public/test" ).value
+
+daemonUser in Docker    := "thegame"
+
+
 
