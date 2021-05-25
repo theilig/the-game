@@ -4,7 +4,6 @@ import { Button, Options } from "../components/InputElements"
 import {useGameState} from "../context/GameState";
 import PlayerHand from "../components/PlayerHand"
 import Piles from "../components/Piles"
-import Deck from "../components/Deck"
 
 function Playing(props) {
     const { gameState, sendMessage } = useGameState()
@@ -55,9 +54,9 @@ function Playing(props) {
         if (parseInt(authTokens.user.userId) === currentPlayerId) {
             let options = []
             if (props.arrangement.cardsPlayed >= stage.data.needToPlay) {
-                options.push(<Button onClick={() => playCards()}>Done</Button>)
+                options.push(<Button key={'done'} onClick={() => playCards()}>Done</Button>)
             } else if (cannotPlay) {
-                options.push(<Button onClick={() => endGame()}>End Game</Button>)
+                options.push(<Button key={'end'} onClick={() => endGame()}>End Game</Button>)
             }
             return (
                 <Options>
@@ -72,7 +71,6 @@ function Playing(props) {
             <PlayerHand arrangement={props.arrangement.cards} />
             <Piles piles={props.arrangement.piles} />
             {renderChoices()}
-            <Deck />
         </div>
     )
 }

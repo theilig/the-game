@@ -6,6 +6,8 @@ import {SourceIndexes} from "./SlotIndexes";
 const HandContainer = styled.div`
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    width: 350px;
     margin-bottom: 20px;
 `;
 

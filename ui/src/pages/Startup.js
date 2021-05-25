@@ -103,9 +103,9 @@ function Startup(props) {
             )
         }
         if (player.pending) {
-            return (<div>{player.name} (Pending)</div>)
+            return (<div key={player.userId}>{player.name} (Pending)</div>)
         }
-        return (<div>{player.name}</div>)
+        return (<div key={player.userId}>{player.name}</div>)
     }
 
     let isGameOwner = false

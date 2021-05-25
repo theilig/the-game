@@ -7,7 +7,8 @@ import {Redirect} from "react-router";
 //import Voting from "./Voting";
 import Playing from "./Playing";
 import {DndProvider} from "react-dnd";
-import {HTML5Backend} from "react-dnd-html5-backend";
+import MultiBackend from 'react-dnd-multi-backend';
+import HTML5ToTouch from 'react-dnd-multi-backend/dist/esm/HTML5toTouch';
 import {SourceIndexes} from "../components/SlotIndexes";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import configData from "../environment/config.json";
@@ -232,7 +233,7 @@ function Game() {
             registerDrop: registerDrop,
             sendMessage: sendMessage
         }}>
-            <DndProvider backend={HTML5Backend}>
+            <DndProvider backend={MultiBackend} options={HTML5ToTouch}>
                 {renderGameStage()}
             </DndProvider>
         </GameStateContext.Provider>
