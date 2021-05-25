@@ -4,7 +4,6 @@ import GameList from './pages/GameList';
 import Login from './pages/Login';
 import { AuthContext } from "./context/auth";
 import PrivateRoute from "./PrivateRoute";
-import CreateGame from "./pages/CreateGame"
 import Game from "./pages/Game"
 
 function App(props) {
@@ -28,7 +27,6 @@ function App(props) {
                     <PrivateRoute exact path="/" component={GameList}/>
                     <PrivateRoute exact path="/games" component={GameList}/>
                     <Route path="/login" component={Login} />
-                    <Route path="/createGame" component={CreateGame} />
                     <Route path="/game/:gameId" component={Game} />
                 </div>
             </Router>

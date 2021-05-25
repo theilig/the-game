@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../img/logo.png';
-import { Card, Logo, Form, Input, Button, Error, EmailRegex } from '../components/AuthForm';
+import { Card, Logo, Form, Input, Button} from '../components/AuthForm';
 import { useAuth } from "../context/auth";
 
 function Login(props) {
     const [isLoggedIn, setLoggedIn] = useState(false);
-    const [lastError, setLastError] = useState("");
     const [name, setName] = useState("")
     const { setAuthTokens } = useAuth();
     const referrer = props.location.state ?
@@ -26,21 +25,13 @@ function Login(props) {
             }).then(result => {
                 setAuthTokens(result.data);
                 setLoggedIn(true);
-            }).catch(error => {
-                if (error.response) {
-                    setLastError(error.response.data)
-                } else {
-                    // Something happened in setting up the request that triggered an Error
-                    setLastError("Problem connecting to login server, please try again");
-                }
-            });
+            })
         }
     }
 
     function validateForm() {
         let validated = true;
         if (name.length === 0) {
-            setLastError("you need to sign in with a name");
             validated = false;
         }
         return validated;

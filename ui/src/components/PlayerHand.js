@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import HandCard from "./HandCard";
-import {SourceIndexes, TargetIndexes} from "./SlotIndexes";
+import {SourceIndexes} from "./SlotIndexes";
 
 const HandContainer = styled.div`
     display: flex;

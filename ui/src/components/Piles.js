@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import Pile from "./Pile";
-import {SourceIndexes, TargetIndexes} from "./SlotIndexes";
+import {SourceIndexes} from "./SlotIndexes";
 
 const PileContainer = styled.div`
     display: flex;

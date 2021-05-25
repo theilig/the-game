@@ -1,0 +1,8 @@
+#!/bin/bash
+mv src/environment/config.json src/environment/config-dev.json
+cp src/environment/config-prod.json src/environment/config.json
+rimraf ../public
+react-scripts build
+ncp build ../public
+rimraf build
+mv src/environment/config-dev.json src/environment/config.json

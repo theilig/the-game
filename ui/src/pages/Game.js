@@ -6,35 +6,23 @@ import Startup from "./Startup";
 import {Redirect} from "react-router";
 //import Voting from "./Voting";
 import Playing from "./Playing";
-import cardImages from "../img/cards/cards";
 import {DndProvider} from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
-import {SourceIndexes, TargetIndexes} from "../components/SlotIndexes";
-//import GameResult from "./GameResult";
+import {SourceIndexes} from "../components/SlotIndexes";
 import ReconnectingWebSocket from "reconnecting-websocket";
+import configData from "../environment/config.json";
 
 function Game() {
     const [ gameState, setGameState ] = useState()
     const [ gameSocket, setGameSocket ] = useState(null)
     const { authTokens } = useAuth()
     const [ gameOver, setGameOver] = useState(false)
-    const [ hovered, setHovered] = useState(null)
     const [ isAttached, setIsAttached ] = useState({})
     const [ piled, setPiled ] = useState({})
     const [ player, setPlayer ] = useState(null)
 
     let game = useParams()
     let gameId = parseInt(game.gameId)
-
-    const cardBack = {
-        cardType: 'CardBack',
-        data: {
-            id: 0,
-            name: "CardBack",
-            imageName: "card000.png",
-            frequency: 0
-        }
-    }
 
     const sendMessage = (message) => {
         let ws = gameSocket
@@ -110,7 +98,7 @@ function Game() {
             return state
         })
         if (gameSocket == null) {
-            const rws = new ReconnectingWebSocket('ws://localhost:9000/api/game');
+            const rws = new ReconnectingWebSocket(configData.WEBSOCKET_URL + '/api/game');
             rws.addEventListener('open', () => {
                 setGameSocket(rws)
                 connectToGame(rws, gameId)
@@ -126,7 +114,7 @@ function Game() {
                 }
             })
         }
-    }, [gameSocket, authTokens.user.userId, gameId, authTokens.token])
+    }, [gameSocket, piled.keys, gameState, authTokens.user.userId, gameId, authTokens.token])
 
     const isActivePlayer = (state) => {
         if (state && state.stage) {
@@ -229,29 +217,6 @@ function Game() {
         }
     }
 
-    const registerHovered = (name, location) => {
-        if (name && name !== "CardBack") {
-            setHovered({name:name, location:location})
-        } else {
-            setHovered(null)
-        }
-    }
-
-    const renderHovered = () => {
-        if (hovered) {
-            const imgStyle = {
-                width: '300px',
-                height: '375px',
-                position: 'absolute',
-                top: hovered.location.top,
-                left: hovered.location.left,
-                pointerEvents: 'none'
-            };
-                return (<img style={{imgStyle}} />)
-            //            return (<img style={imgStyle} src={cardImages[hovered.name]} title={hovered.name} alt={hovered.name} />)
-        }
-    }
-
     if (gameOver) {
         if (gameSocket !== null) {
             setGameSocket(null)
@@ -264,8 +229,6 @@ function Game() {
     return (
         <GameStateContext.Provider value={{
             gameState: gameState,
-            registerHovered: registerHovered,
-            renderHovered: renderHovered,
             registerDrop: registerDrop,
             sendMessage: sendMessage
         }}>
