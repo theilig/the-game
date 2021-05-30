@@ -1,13 +1,11 @@
 import React from "react";
-import { useAuth } from "../context/auth";
 import { Button, Options } from "../components/InputElements"
 import {useGameState} from "../context/GameState";
 import PlayerHand from "../components/PlayerHand"
 import Piles from "../components/Piles"
 
 function Playing(props) {
-    const { gameState, sendMessage } = useGameState()
-    const { authTokens } = useAuth()
+    const { gameState, sendMessage, registerDrop } = useGameState()
     const dropOk = (pile, card) => {
         if (pile.direction === "Up") {
             return card > pile.topCard || card === pile.topCard - 10
@@ -16,6 +14,12 @@ function Playing(props) {
         }
     }
 
+    const playDroppedCards = (source, targetIndex, resetTarget) => {
+        if (props.arrangement.cardsPlayed) {
+            playCards()
+        }
+        registerDrop(source, targetIndex, resetTarget)
+    }
     const getPlays = () => {
         return props.arrangement.piles.map((p, index) => {
             return {
@@ -33,16 +37,14 @@ function Playing(props) {
         })
     }
 
-    const endGame = () => {
+    const finishTurn = () => {
         sendMessage({
-            messageType: 'EndGame',
-            data: {plays: getPlays()}
+            messageType: 'FinishTurn'
         })
     }
 
-    const renderChoices = () => {
+    const renderChoices = (multiPlayer) => {
         const stage = gameState.stage
-        let currentPlayerId = stage.data.currentPlayerId
         let cannotPlay = true
         gameState.piles.forEach(p => {
             props.arrangement.cards.forEach(c => {
@@ -51,12 +53,24 @@ function Playing(props) {
                 }
             })
         })
-        if (parseInt(authTokens.user.userId) === currentPlayerId) {
+        if (props.activePlayer) {
             let options = []
-            if (props.arrangement.cardsPlayed >= stage.data.needToPlay) {
-                options.push(<Button key={'done'} onClick={() => playCards()}>Done</Button>)
-            } else if (cannotPlay) {
-                options.push(<Button key={'end'} onClick={() => endGame()}>End Game</Button>)
+            if (multiPlayer) {
+                if (props.arrangement.cardsPlayed === 1) {
+                    options.push(<Button key={'done'} onClick={() => playCards()}>Play</Button>)
+                } else if (props.arrangement.cardsPlayed === 0 && stage.data.played >= stage.data.needToPlay) {
+                    options.push(<Button key={'done'} onClick={() => finishTurn()}>Done</Button>)
+                }
+            } else {
+                let showDone = props.arrangement.cardsPlayed >= stage.data.needToPlay
+                if (multiPlayer) {
+                    showDone = stage.data.played >= stage.data.needToPlay
+                }
+                if (showDone) {
+                    options.push(<Button key={'done'} onClick={() => playCards()}>Done</Button>)
+                } else if (cannotPlay) {
+                    options.push(<Button key={'end'} onClick={() => playCards()}>End Game</Button>)
+                }
             }
             return (
                 <Options>
@@ -66,11 +80,19 @@ function Playing(props) {
         }
     }
 
+    const multiPlayer = gameState.players.length > 1
+    const currentPlayer = gameState.players.filter(p => p.userId === gameState.stage.data.currentPlayerId)
+    let turnString = '';
+    if (currentPlayer) {
+        turnString = currentPlayer[0].name + " is playing."
+    }
     return (
         <div>
+            {props.activePlayer && <div>It's your Turn</div>}
+            {!props.activePlayer && <div>{turnString}</div>}
             <PlayerHand arrangement={props.arrangement.cards} />
-            <Piles piles={props.arrangement.piles} />
-            {renderChoices()}
+            <Piles piles={props.arrangement.piles}  registerDrop={playDroppedCards} />
+            {renderChoices(multiPlayer)}
         </div>
     )
 }

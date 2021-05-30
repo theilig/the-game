@@ -17,7 +17,7 @@ function PlayerHand(props) {
             {props.arrangement.map((column, index) => {
                 return (
                         <HandCard card={column.card}
-                                  index={SourceIndexes.HandIndex + column.index}
+                                  index={SourceIndexes.HandIndex + column.card}
                                   key={SourceIndexes.HandIndex + column.index}
                         />
                 )

@@ -30,6 +30,8 @@ libraryDependencies += "org.mindrot" % "jbcrypt" % "0.4"
 
 libraryDependencies += "com.nimbusds" % "nimbus-jose-jwt" % "8.19"
 
+libraryDependencies += "com.sendgrid" % "sendgrid-java" % "4.0.1"
+
 libraryDependencies += specs2 % Test
 
 unmanagedResourceDirectories in Test +=  baseDirectory ( _ /"target/web/public/test" ).value

@@ -19,6 +19,7 @@ function Piles(props) {
                         topCard={pile.topCard}
                         index={SourceIndexes.PileOffset + index}
                         topCardIndex={pile.topCardIndex}
+                        registerDrop={props.registerDrop}
                         key={index}
                     />
                 )

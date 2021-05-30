@@ -10,6 +10,7 @@ case class Deck(cards: Set[Int]) {
     val card = cards.toVector(r.nextInt(cards.size))
     (card, Deck(cards - card))
   }
+  def isEmpty: Boolean = cards.isEmpty
 }
 
 object Deck {

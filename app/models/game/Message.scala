@@ -42,7 +42,7 @@ object ConnectToGame {
   implicit val connectFormat: Format[ConnectToGame] = Json.format
 }
 
-case class GameState(state: JsObject) extends Message
+case class GameState(projection: PlayerProjection) extends Message
 object GameState {
   implicit val gameStateFormat: Format[GameState] = Json.format
 }
@@ -68,6 +68,8 @@ object PlayCards {
   implicit val playCardsFormat: Format[PlayCards] = Json.format
 }
 
+case object FinishTurn extends CurrentPlayerMessage
+
 case object GameOver extends Message
 
 case object LeaveGame extends Message
@@ -90,6 +92,7 @@ object Message {
           case "AcceptPlayer" => (JsPath \ "data").read[AcceptPlayer].reads(js)
           case "RejectPlayer" => (JsPath \ "data").read[RejectPlayer].reads(js)
           case "PlayCards" => (JsPath \ "data").read[PlayCards].reads(js)
+          case "FinishTurn" => JsSuccess(FinishTurn)
         }
       )
     },

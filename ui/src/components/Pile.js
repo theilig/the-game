@@ -13,7 +13,6 @@ const PileDirection = styled.img`
 `;
 
 function Pile(props) {
-    const {registerDrop} = useGameState()
     const dropOk = (pile, card) => {
         if (pile.direction === "Up") {
             return card > pile.topCard || card === pile.topCard - 10
@@ -28,7 +27,7 @@ function Pile(props) {
             return dropOk(props, item.card)
         }),
         drop: (c) => {
-            registerDrop(c, props.index)
+            props.registerDrop(c, props.index)
         }
     })
 

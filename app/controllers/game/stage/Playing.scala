@@ -1,6 +1,6 @@
 package controllers.game.stage
 import models.User
-import models.game.{GameError, Message, Pile, PlayCards, Player, State}
+import models.game.{FinishTurn, GameError, Message, PlayCards, Player, State}
 import play.api.libs.json.{Format, Json}
 
 case class Playing(currentPlayerId: Int, played: Int, needToPlay: Int) extends PlayerStage(currentPlayerId) {
@@ -27,7 +27,7 @@ case class Playing(currentPlayerId: Int, played: Int, needToPlay: Int) extends P
             case Right(currentState) =>
               val pile = currentState.piles.drop(play.pile).headOption
               pile match {
-                case Some(p) => playCardsOnPile(play.pile, play.cards, currentState)
+                case Some(_) => playCardsOnPile(play.pile, play.cards, currentState)
                 case None => Left(GameError("Invalid Pile"))
               }
             case error => error
@@ -38,11 +38,21 @@ case class Playing(currentPlayerId: Int, played: Int, needToPlay: Int) extends P
             total + play.cards.length
           })
           if (cardsPlayed >= needToPlay) {
-            s.finishTurn
-          } else {
+            if (s.stage.currentPlayer(s).get.hand.isEmpty || s.players.length == 1) {
+              /* For one player game FinishTurn is implied with PlayCards,
+               * also if the player is out of cards the turn is over
+               */
+              s.finishTurn
+            } else {
+              s.copy(stage = copy(played = cardsPlayed))
+            }
+          } else if (s.stage.currentPlayer(s).get.canPlay(s.piles)) {
             s.copy(stage = copy(played = cardsPlayed))
+          } else {
+            s.copy(stage = GameEnded)
           }
         })
+      case FinishTurn if played >= needToPlay => Right(state.finishTurn)
       case _ => Left(GameError("unexpected message"))
     }
   }

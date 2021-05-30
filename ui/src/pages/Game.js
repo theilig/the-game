@@ -34,32 +34,8 @@ function Game() {
 
     useEffect(() => {
         const setState = (data) => {
-            const totalCards = (state) => {
-                let total = 0
-                if (!state || !state.players) {
-                    return total
-                }
-                state.players.forEach(p => {
-                    if (p.hand) {
-                        p.hand.forEach(c => total += c)
-                    }
-                })
-                return total
-            }
-            let oldState = gameState
-            // need to reset when hand changes, or when pile that's attached changes
-            let oldHandSum = totalCards(oldState)
-            let newHandSum = totalCards(data)
-            let pileChanged = false
-            if (oldState && oldState.piles && data.piles) {
-                piled.keys.forEach(offset => {
-                    let index = offset - SourceIndexes.PileOffset
-                    if (oldState.piles[index].topCard !== data.piles[index].topCard) {
-                        pileChanged = true;
-                    }
-                })
-            }
-            if (pileChanged || oldHandSum !== newHandSum) {
+            // need to reset when currentPlayer changes
+            if (gameState && gameState.stage.data.currentPlayerId !== data.stage.data.currentPlayerId) {
                 setIsAttached({})
                 setPiled({})
             }
@@ -107,7 +83,7 @@ function Game() {
             rws.addEventListener('message', (received) => {
                 const message = JSON.parse(received.data)
                 if (message.messageType === "GameState") {
-                    setState(indexCards(message.data.state))
+                    setState(indexCards(message.data.projection))
                 } else if (message.messageType === "GameOver") {
                     setGameOver(true)
                 } else if (message.messageType === "Not Authenticated") {
@@ -137,14 +113,16 @@ function Game() {
         }
     }
 
-    const registerDrop = (source, targetIndex, resetTarget) => {
+    const registerDrop = (source, targetIndex) => {
         const sourceIndex = source.index
         let newAttached = {...isAttached}
         let newPiled = {...piled}
-        resetAttached(sourceIndex, newAttached, newPiled)
-        if (targetIndex != null && resetTarget) {
-            const resetCards = piled[targetIndex] ?? []
-            resetCards.forEach(c => resetAttached(c.data.sourceIndex, newAttached, newPiled))
+        if (gameState.players.length > 1) {
+            // for multi-player game we only attache one card at a time
+            newAttached = {}
+            newPiled = {}
+        } else {
+            resetAttached(sourceIndex, newAttached, newPiled)
         }
         if (targetIndex != null) {
             newAttached[sourceIndex] = targetIndex
@@ -161,7 +139,7 @@ function Game() {
         let cardArrangement = []
         let cardsPlayed = 0
         hand.forEach((card, index) => {
-            if (currentAttached[index + SourceIndexes.HandIndex] == null) {
+            if (currentAttached[card + SourceIndexes.HandIndex] == null) {
                 cardArrangement.push({card: card, index: index})
             } else {
                 cardsPlayed += 1
@@ -202,7 +180,7 @@ function Game() {
         if (activePlayer) {
             switch (stage.stage) {
                 case "Playing":
-                    return <Playing arrangement={arrangement} />
+                    return <Playing arrangement={arrangement} activePlayer={activePlayer}/>
                 default:
                     return <div>Unknown state</div>
 
@@ -211,6 +189,8 @@ function Game() {
             switch (stage.stage) {
                 case "NotStarted":
                     return <Startup/>
+                case "Playing":
+                    return <Playing arrangement={arrangement} activePlayer={activePlayer} />
                 default:
                     break;
             }

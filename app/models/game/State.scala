@@ -3,7 +3,7 @@ package models.game
 import controllers.game.stage.{GameEnded, NotStarted, Playing, Stage}
 import models.schema.Tables
 import models.User
-import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, JsSuccess, JsValue, Json, Reads, Writes}
+import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, Json, OFormat}
 
 import scala.annotation.tailrec
 
@@ -68,7 +68,9 @@ case class State(
           (players ::: players).dropWhile(_.userId != currentPlayer).tail.dropWhile(p => p.hand.isEmpty).headOption
         nextPlayer match {
           case None => copy(stage = GameEnded)
-          case Some(player) if player.canPlay(piles) => copy(stage = Playing(player.userId, 0, rules.cardsToPlay))
+          case Some(player) if player.canPlay(piles) =>
+            val needToPlay = if (deck.isEmpty) 1 else rules.cardsToPlay
+            copy(stage = Playing(player.userId, 0, needToPlay))
           case _ => copy(stage = GameEnded)
         }
     }
@@ -81,65 +83,10 @@ case class State(
       players = players.map(p => p.copy(hand = p.hand.filterNot(_ == card)))
     )
   }
-
-  def projection(userId: Int): JsObject = {
-    stage match {
-      case GameEnded => JsObject(
-        Seq(
-          "players" -> Json.toJson(players),
-          "stage" -> Json.toJson(stage)
-        )
-      )
-      case NotStarted => JsObject(
-        Seq(
-          "players" -> Json.toJson(players),
-          "stage" -> Json.toJson(stage)
-        )
-      )
-      case _ =>
-        val playerList = players.map {
-          case p if p.userId == userId => JsObject(
-            Seq(
-              "hand" -> Json.toJson(p.hand),
-              "name" -> JsString(p.name),
-              "userId" -> JsNumber(p.userId)
-            )
-          )
-          case p => JsObject(Seq("userId" -> JsNumber(p.userId)))
-        }
-        val allCards = players.foldLeft(deck.cards)((cards, p) => cards ++ p.hand.toSet).toList.sorted
-        JsObject(
-          Seq(
-            "players" -> JsArray(playerList),
-            "piles" -> Json.toJson(piles),
-            "deck" -> Json.toJson(allCards),
-            "rules" -> Json.toJson(rules),
-            "stage" -> Json.toJson(stage)
-          )
-        )
-    }
-  }
 }
 
 object State {
-  implicit val stateReads: Reads[State] = (json: JsValue) => {
-    JsSuccess(State(
-      (json \ "players").as[List[Player]],
-      (json \ "deck").as[Deck],
-      (json \ "piles").as[List[Pile]],
-      (json \ "rules").as[Rules],
-      (json \ "stage").as[Stage]
-    ))
-  }
-  implicit val stateFormat: Writes[State] = (state: State) => JsObject(
-    Seq(
-      "players" -> Json.toJson(state.players),
-      "deck" -> Json.toJson(state.deck),
-      "piles" -> Json.toJson(state.piles),
-      "rules" -> Json.toJson(state.rules),
-      "stage" -> Json.toJson(state.stage)
-    )
-  )
+  implicit val stateFormat: OFormat[State] = Json.format[State]
 
   def apply(user: User): State = {
     new State(
