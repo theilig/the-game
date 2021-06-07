@@ -1,5 +1,3 @@
-import com.typesafe.sbt.packager.docker.{Cmd, DockerStageBreak, ExecCmd}
-
 name := "TheGame"
  
 version := "1.0"

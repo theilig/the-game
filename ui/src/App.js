@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route } from "react-router-dom"
 import GameList from './pages/GameList';
 import Login from './pages/Login';
+import Signup from "./pages/Signup";
 import { AuthContext } from "./context/auth";
 import PrivateRoute from "./PrivateRoute";
 import Game from "./pages/Game"
@@ -27,6 +28,7 @@ function App(props) {
                     <PrivateRoute exact path="/" component={GameList}/>
                     <PrivateRoute exact path="/games" component={GameList}/>
                     <Route path="/login" component={Login} />
+                    <Route path="/signup" component={Signup} />
                     <Route path="/game/:gameId" component={Game} />
                 </div>
             </Router>

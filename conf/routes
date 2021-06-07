@@ -7,6 +7,8 @@
 # Map static resources from the /public folder to the /assets URL path
 GET     /                           controllers.FrontendController.index
 POST    /api/login                  controllers.LoginController.processLoginAttempt
+POST    /api/signup                 controllers.LoginController.processSignupAttempt
+POST    /api/confirm                controllers.LoginController.processConfirmation
 GET     /api/games                  controllers.SetupController.showGameList
 GET     /api/game                   controllers.GameSocket.socket
 POST    /api/createGame             controllers.SetupController.newGame

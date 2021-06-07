@@ -9,7 +9,7 @@ import Playing from "./Playing";
 import {DndProvider} from "react-dnd";
 import MultiBackend from 'react-dnd-multi-backend';
 import HTML5ToTouch from 'react-dnd-multi-backend/dist/esm/HTML5toTouch';
-import {SourceIndexes} from "../components/SlotIndexes";
+import {SourceIndexes, TargetIndexes} from "../components/SlotIndexes";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import configData from "../environment/config.json";
 
@@ -39,6 +39,7 @@ function Game() {
                 setIsAttached({})
                 setPiled({})
             }
+
             setGameState(data);
         }
 
@@ -148,12 +149,16 @@ function Game() {
         let pileArrangement = []
         gameState.piles.forEach((pile, index) => {
             let offset = SourceIndexes.PileOffset + index
+            let piledCards = []
             if (currentPiled[offset] && currentPiled[offset].length > 0) {
+                piledCards = currentPiled[offset].filter(c => hand.includes(c.card))
+            }
+            if (piledCards.length > 0) {
                 pileArrangement.push({
                     direction: pile.direction,
-                    cards: currentPiled[offset],
-                    topCard: currentPiled[offset][currentPiled[offset].length - 1].card,
-                    topCardIndex: currentPiled[offset][currentPiled[offset].length - 1].index
+                    cards: piledCards,
+                    topCard: piledCards[piledCards.length - 1].card,
+                    topCardIndex: piledCards[piledCards.length - 1].index
                 })
             } else {
                 pileArrangement.push({direction: pile.direction, topCard: pile.topCard, cards: []})
@@ -180,7 +185,10 @@ function Game() {
         if (activePlayer) {
             switch (stage.stage) {
                 case "Playing":
-                    return <Playing arrangement={arrangement} activePlayer={activePlayer}/>
+                    return <Playing
+                        arrangement={arrangement}
+                        activePlayer={activePlayer}
+                    />
                 default:
                     return <div>Unknown state</div>
 
@@ -190,7 +198,10 @@ function Game() {
                 case "NotStarted":
                     return <Startup/>
                 case "Playing":
-                    return <Playing arrangement={arrangement} activePlayer={activePlayer} />
+                    return <Playing
+                        arrangement={arrangement}
+                        activePlayer={activePlayer}
+                    />
                 default:
                     break;
             }

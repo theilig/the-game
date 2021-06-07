@@ -1,23 +1,28 @@
 import React, { useState } from "react";
-import { Redirect } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import axios from 'axios';
 import logoImg from '../img/logo.png';
-import { Card, Logo, Form, Input, Button} from '../components/AuthForm';
+import { Card, Logo, Form, Input, Error, EmailRegex } from '../components/AuthForm';
+import { Button } from "../components/InputElements"
 import { useAuth } from "../context/auth";
 
 function Login(props) {
     const [isLoggedIn, setLoggedIn] = useState(false);
-    const [name, setName] = useState("")
+    const [lastError, setLastError] = useState("");
+    const [confirming, setConfirming] = useState(false)
+    const [token, setToken] = useState("")
+    const [email, setEmail] = useState("")
     const { setAuthTokens } = useAuth();
     const referrer = props.location.state ?
         (props.location.state.referrer.pathname || '/') :
         '/';
 
-    function postLogin() {
+    function postConfirming() {
         if (validateForm()) {
-            axios("/api/login", {
+            axios("/api/confirm", {
                 data: {
-                    name
+                    email,
+                    token
                 },
                 method: "post",
                 headers: {'X-Requested-With': 'XMLHttpRequest'},
@@ -25,13 +30,46 @@ function Login(props) {
             }).then(result => {
                 setAuthTokens(result.data);
                 setLoggedIn(true);
-            })
+            }).catch(error => {
+                if (error.response) {
+                    setLastError(error.response.data)
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    setLastError("Problem connecting to login server, please try again");
+                }
+            });
+        }
+    }
+    function postLogin() {
+        if (validateForm()) {
+            axios("/api/login", {
+                data: {
+                    email
+                },
+                method: "post",
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+                withCredentials: true
+            }).then( _ => {
+                setConfirming(true)
+            }).catch(error => {
+                if (error.response) {
+                    setLastError(error.response.data)
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    setLastError("Problem connecting to login server, please try again");
+                }
+            });
         }
     }
 
     function validateForm() {
         let validated = true;
-        if (name.length === 0) {
+        if (email.length === 0 || !EmailRegex.test(email)) {
+            setLastError("you need to sign in with an email");
+            validated = false;
+        }
+        if (confirming && token.length === 0) {
+            setLastError("you need the token from your e-mail to confirm");
             validated = false;
         }
         return validated;
@@ -46,15 +84,29 @@ function Login(props) {
             <Logo src={logoImg} />
             <Form>
                 <Input
-                    type="name"
-                    value={name}
+                    type="email"
+                    value={email}
                     onChange={e => {
-                        setName(e.target.value);
+                        setEmail(e.target.value);
                     }}
-                    placeholder="name"
+                    placeholder="email"
                 />
-                <Button onClick={postLogin}>Play</Button>
+                {confirming &&
+                <Input
+                    type="confirmationCode"
+                    value={token}
+                    onChange={e => {
+                        setToken(e.target.value);
+                    }}
+                    placeholder="check your e-mail for code"
+                />
+                }
+                {confirming && <Button onClick={postConfirming}>Confirm</Button>}
+                {confirming && <Button onClick={postLogin}>Send Confirmation Again</Button>}
+                {!confirming && <Button onClick={postLogin}>Sign In</Button>}
             </Form>
+            <Link to="/signup">Sign Up for New Account</Link>
+            { lastError && <Error>{lastError}</Error> }
         </Card>
     );
 }

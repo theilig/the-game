@@ -6,6 +6,8 @@ import Piles from "../components/Piles"
 
 function Playing(props) {
     const { gameState, sendMessage, registerDrop } = useGameState()
+    const currentPlayer = gameState.players.filter(p => p.userId === gameState.stage.data.currentPlayerId)
+
     const dropOk = (pile, card) => {
         if (pile.direction === "Up") {
             return card > pile.topCard || card === pile.topCard - 10
@@ -15,8 +17,11 @@ function Playing(props) {
     }
 
     const playDroppedCards = (source, targetIndex, resetTarget) => {
-        if (props.arrangement.cardsPlayed) {
-            playCards()
+        if (gameState.players.length > 1 && props.arrangement.cardsPlayed) {
+            // Don't play card if we moved it to a different pile
+            if (props.arrangement[source.card] == null) {
+                playCards()
+            }
         }
         registerDrop(source, targetIndex, resetTarget)
     }
@@ -62,7 +67,7 @@ function Playing(props) {
                     options.push(<Button key={'done'} onClick={() => finishTurn()}>Done</Button>)
                 }
             } else {
-                let showDone = props.arrangement.cardsPlayed >= stage.data.needToPlay
+                let showDone = props.arrangement.cardsPlayed + stage.data.played >= stage.data.needToPlay
                 if (multiPlayer) {
                     showDone = stage.data.played >= stage.data.needToPlay
                 }
@@ -81,14 +86,14 @@ function Playing(props) {
     }
 
     const multiPlayer = gameState.players.length > 1
-    const currentPlayer = gameState.players.filter(p => p.userId === gameState.stage.data.currentPlayerId)
     let turnString = '';
+    const cardsLeft = gameState.deck.cards.length
     if (currentPlayer) {
-        turnString = currentPlayer[0].name + " is playing."
+        turnString = currentPlayer[0].name + " is playing.  " + cardsLeft + " cards left"
     }
     return (
         <div>
-            {props.activePlayer && <div>It's your Turn</div>}
+            {props.activePlayer && <div>It's your Turn.  {cardsLeft} cards left</div>}
             {!props.activePlayer && <div>{turnString}</div>}
             <PlayerHand arrangement={props.arrangement.cards} />
             <Piles piles={props.arrangement.piles}  registerDrop={playDroppedCards} />
