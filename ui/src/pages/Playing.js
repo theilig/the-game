@@ -87,7 +87,7 @@ function Playing(props) {
 
     const multiPlayer = gameState.players.length > 1
     let turnString = '';
-    const cardsLeft = gameState.deck.cards.length
+    const cardsLeft = gameState.deck.cards.length + currentPlayer[0].hand.length - props.arrangement.cardsPlayed
     if (currentPlayer) {
         turnString = currentPlayer[0].name + " is playing.  " + cardsLeft + " cards left"
     }
