@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import controllers.game.stage.{FrozenForSetup, GameEnded}
 import dao.GameDao
 import models.User
-import models.game.{ConnectToGame, GameError, GameOver, GameState, LeaveGame, Message, PlayerProjection, StartGame, State, UserMessage}
+import models.game.{ConnectToGame, GameOver, GameState, LeaveGame, Message, PlayerProjection, StartGame, State, UserMessage}
 import services.GameSetup
 
 import scala.concurrent.duration.{FiniteDuration, SECONDS}
@@ -71,11 +71,16 @@ class GameActor(gameId: Int, gameDao: GameDao)
               }
             case Left(e) => sender() ! e
           }
-        case StartGame =>
+        case StartGame(cardsInHand, cardsToPlay) =>
           // Quickly shift into frozen state, we don't use updateGameState
           // because we want to avoid notifying anyone
-          state = Some(currentState.copy(stage = FrozenForSetup))
-          setUpGame(currentState).map(newState => {
+          state = Some(currentState.copy(
+            stage = FrozenForSetup,
+            rules = currentState.rules.copy(
+              cardsToPlay = cardsToPlay,
+              cardsInHand = cardsInHand
+            )))
+          setUpGame(state.get).map(newState => {
             computerPlayers = newState.players.filter(_.userId < 0).map(p =>
               p.userId -> context.actorOf(ComputerPlayer.props(p.userId))
             ).toMap

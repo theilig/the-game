@@ -76,7 +76,11 @@ case object LeaveGame extends Message
 
 case object JoinGame extends Message
 
-case object StartGame extends OwnerMessage
+case class StartGame(cardsInHand: Int, cardsToPlay: Int) extends OwnerMessage
+
+object StartGame {
+  implicit val startGameFormat: Format[StartGame] = Json.format
+}
 
 object Message {
   implicit val messageFormat: Format[Message] = Format[Message](
@@ -88,7 +92,7 @@ object Message {
           case "ConnectToGame" => (JsPath \ "data").read[ConnectToGame].reads(js)
           case "LeaveGame" => JsSuccess(LeaveGame)
           case "JoinGame" => JsSuccess(JoinGame)
-          case "StartGame" => JsSuccess(StartGame)
+          case "StartGame" => (JsPath \ "data").read[StartGame].reads(js)
           case "AcceptPlayer" => (JsPath \ "data").read[AcceptPlayer].reads(js)
           case "RejectPlayer" => (JsPath \ "data").read[RejectPlayer].reads(js)
           case "PlayCards" => (JsPath \ "data").read[PlayCards].reads(js)

@@ -1,8 +1,9 @@
-import React from "react";
+import React, {useState} from "react";
 import { useAuth } from "../context/auth";
 import styled from "styled-components";
 import {useGameState} from "../context/GameState";
 import { Button } from "../components/InputElements"
+import NumericInput from 'react-numeric-input';
 
 const PlayerList = styled.div`
     display: flex;
@@ -11,15 +12,23 @@ const PlayerList = styled.div`
     font-size: xx-large;
 `;
 
+const RuleList = styled.div`
+    display: flex;
+    flex-direction: row;
+    height: 27px;
+`;
+
 const Options = styled.div`
     display: flex;
     flex-direction: row;
     max-width:410px;
 `;
 
-function Startup(props) {
+function Startup() {
     const { authTokens } = useAuth()
     const { gameState, sendMessage } = useGameState()
+    const [ handSize, setHandSize ] = useState(0)
+    const [ cardsToPlay, setCardsToPlay ] = useState(0)
     const MAX_PLAYERS = 5
     function leaveGame() {
         sendMessage({
@@ -32,8 +41,14 @@ function Startup(props) {
         })
     }
     function startGame() {
+        const hand = handSize ? handSize : gameState.rules.cardsInHand
+        const play = cardsToPlay ? cardsToPlay : gameState.rules.cardsToPlay
         sendMessage({
-            messageType: "StartGame"
+            messageType: "StartGame",
+            data: {
+                cardsInHand: hand,
+                cardsToPlay: play
+            }
         })
     }
 
@@ -53,6 +68,14 @@ function Startup(props) {
                 userId: userId
             }
         })
+    }
+
+    const updateHandSize = function (newValue) {
+        setHandSize(newValue)
+    }
+
+    const updateCardsToPlay = function (newValue) {
+        setCardsToPlay(newValue)
     }
 
     const renderOptions = (isGameOwner) => {
@@ -115,6 +138,32 @@ function Startup(props) {
 
     return (
         <div>
+            <RuleList>
+                Hand Size: <NumericInput
+                                min={1}
+                                max={10}
+                                value={gameState.rules.cardsInHand}
+                                style={{
+                                    input: {
+                                        height: '27px',
+                                        width: '50px',
+                                    }
+                                }}
+                                onChange={updateHandSize}
+                            />
+                Cards To Play: <NumericInput
+                                    min={1}
+                                    max={5}
+                                    value={gameState.rules.cardsToPlay}
+                                    style={{
+                                        input: {
+                                            height: '27px',
+                                            width: '50px',
+                                        }
+                                    }}
+                                    onChange={updateCardsToPlay}
+                                />
+            </RuleList>
             <PlayerList>
                 <div>Current Players</div>
                 {gameState && gameState.players.map((player) => (

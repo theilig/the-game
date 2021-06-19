@@ -41,7 +41,12 @@ case object NotStarted extends Stage {
           Right(state)
         }
       case AcceptPlayer(userId) if state.players.filter(_.pending).exists(p => p.userId == userId) =>
-        Right(state.updatePlayer(userId)(p => p.copy(pending = false)))
+        val playerList = state.players.map({
+          case p if p.userId == userId => p.copy(pending = false)
+          case p => p
+        })
+        val playerCount = playerList.filterNot(_.pending).length
+        Right(state.copy(players = playerList, rules = state.rules.updateForPlayerCount(playerCount)))
       case AcceptPlayer(userId) if state.players.exists(p => p.userId == userId) =>
         Left(GameError("Player has already been accepted"))
       case AcceptPlayer(_) =>

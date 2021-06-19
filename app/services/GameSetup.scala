@@ -8,7 +8,7 @@ import scala.util.Random
 
 class GameSetup()(implicit ec: ExecutionContext) {
   def setupGame(state: State): Future[State] = {
-    val newState = state.copy(rules = state.rules.updateForPlayerCount(state.players.length)).fillPlayerHands()
+    val newState = state.fillPlayerHands()
     val random = new Random
     val newPlayers = random.shuffle(newState.players)
     val startingPlayerIndex = random.between(0, newState.players.length)
