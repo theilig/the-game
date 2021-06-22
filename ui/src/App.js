@@ -6,6 +6,8 @@ import Signup from "./pages/Signup";
 import { AuthContext } from "./context/auth";
 import PrivateRoute from "./PrivateRoute";
 import Game from "./pages/Game"
+import axios from "axios";
+import {Switch} from "react-router";
 
 function App(props) {
     let existingTokens = localStorage.getItem("tokens");
@@ -21,16 +23,45 @@ function App(props) {
         setAuthTokens(data);
     }
 
+    const logout = () => {
+        setTokens({})
+    }
+
+    const confirm = (email, token) => {
+        axios("/api/confirm", {
+            data: {
+                email,
+                token
+            },
+            method: "post",
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            withCredentials: true
+        }).then(result => {
+            setTokens(result.data);
+            return null
+        }).catch(error => {
+            return error
+        });
+    }
+
+    const NotFound = () => (
+        <div>
+            <h1>404 - Not Found!</h1>
+        </div>
+    )
+
     return (
-        <AuthContext.Provider value={{ authTokens, setAuthTokens: setTokens  }}>
+        <AuthContext.Provider value={{ authTokens, confirm: confirm, logout: logout }}>
             <Router>
-                <div>
+                <Switch>
                     <PrivateRoute exact path="/" component={GameList}/>
                     <PrivateRoute exact path="/games" component={GameList}/>
                     <Route path="/login" component={Login} />
                     <Route path="/signup" component={Signup} />
                     <Route path="/game/:gameId" component={Game} />
-                </div>
+                    <Route path="/confirm/:email/:confirmationToken" component={GameList} />
+                    <Route component={NotFound} />
+                </Switch>
             </Router>
         </AuthContext.Provider>
     );

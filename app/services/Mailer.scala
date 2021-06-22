@@ -5,8 +5,6 @@ import play.api.Configuration
 
 import javax.inject.Inject
 
-import java.io.IOException
-
 class Mailer @Inject() (config: Configuration) {
   def sendConfirmation(email: String, token: String): Boolean = {
     val key = config.get[String]("sendGridApiKey")
@@ -19,7 +17,7 @@ class Mailer @Inject() (config: Configuration) {
       new Email(email),
       new Content(
         "text/plain",
-        s"Either enter $token into login form, or follow the link below to sign in\nhttps://games.heilig.com/confirm/$token"
+        s"Either enter $token into login form, or follow the link below to sign in\nhttps://games.heilig.com/confirm/$email/$token"
       )
     )
     try {

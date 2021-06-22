@@ -12,32 +12,24 @@ function Login(props) {
     const [confirming, setConfirming] = useState(false)
     const [token, setToken] = useState("")
     const [email, setEmail] = useState("")
-    const { setAuthTokens } = useAuth();
+    const { confirm } = useAuth();
     const referrer = props.location.state ?
         (props.location.state.referrer.pathname || '/') :
         '/';
 
     function postConfirming() {
         if (validateForm()) {
-            axios("/api/confirm", {
-                data: {
-                    email,
-                    token
-                },
-                method: "post",
-                headers: {'X-Requested-With': 'XMLHttpRequest'},
-                withCredentials: true
-            }).then(result => {
-                setAuthTokens(result.data);
-                setLoggedIn(true);
-            }).catch(error => {
+            const error = confirm(email, token)
+            if (error) {
                 if (error.response) {
                     setLastError(error.response.data)
                 } else {
                     // Something happened in setting up the request that triggered an Error
                     setLastError("Problem connecting to login server, please try again");
                 }
-            });
+            } else {
+                setLoggedIn(true)
+            }
         }
     }
     function postLogin() {

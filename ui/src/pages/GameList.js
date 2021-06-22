@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import { useAuth } from "../context/auth";
 import axios from 'axios';
-import {Redirect} from "react-router";
+import {Redirect, useParams} from "react-router";
 import GameListItem from "../components/GameListItem";
 import styled from "styled-components";
 
@@ -33,8 +33,13 @@ function GameList() {
     const [ gameList, setGameList ] = useState({games:[]});
     const [ lastError, setLastError ] = useState( "" );
     const [ selectedGame, setSelectedGame ] = useState( 0 )
+    const { confirm, logout } = useAuth()
+    const params = useParams()
+    let confirmationCode = params.confirmationToken
+    let email = params.email
+
     function logOut() {
-        setAuthTokens();
+        logout()
         setLastError("Logged out");
     }
 
@@ -70,10 +75,18 @@ function GameList() {
             }).catch(() => {
                 setLastError("Could not retrieve games");
             });
-        };
-        fetchData()
-        const tick = setInterval(fetchData, 60000)
-        return (() => clearInterval(tick))
+        }
+        if (confirmationCode) {
+            let error = confirm(email, confirmationCode)
+            confirmationCode = null
+            if (error) {
+                setLastError("Could not confirm token");
+            }
+        } else {
+            fetchData()
+            const tick = setInterval(fetchData, 60000)
+            return (() => clearInterval(tick))
+        }
     }, [authTokens.token])
 
     if (lastError) {
