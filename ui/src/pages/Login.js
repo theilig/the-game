@@ -7,12 +7,11 @@ import { Button } from "../components/InputElements"
 import { useAuth } from "../context/auth";
 
 function Login(props) {
-    const [isLoggedIn, setLoggedIn] = useState(false);
     const [lastError, setLastError] = useState("");
     const [confirming, setConfirming] = useState(false)
     const [token, setToken] = useState("")
     const [email, setEmail] = useState("")
-    const { confirm } = useAuth();
+    const { confirm, isLoggedIn } = useAuth();
     const referrer = props.location.state ?
         (props.location.state.referrer.pathname || '/') :
         '/';
@@ -27,8 +26,6 @@ function Login(props) {
                     // Something happened in setting up the request that triggered an Error
                     setLastError("Problem connecting to login server, please try again");
                 }
-            } else {
-                setLoggedIn(true)
             }
         }
     }

@@ -17,6 +17,7 @@ function App(props) {
         existingTokens = {};
     }
     const [authTokens, setAuthTokens] = useState(existingTokens);
+    const [isLoggedIn, setIsLoggedIn] = useState(existingTokens != null)
 
     const setTokens = (data) => {
         localStorage.setItem("tokens", JSON.stringify(data));
@@ -25,6 +26,7 @@ function App(props) {
 
     const logout = () => {
         setTokens({})
+        setIsLoggedIn(false)
     }
 
     const confirm = (email, token) => {
@@ -38,6 +40,7 @@ function App(props) {
             withCredentials: true
         }).then(result => {
             setTokens(result.data);
+            setIsLoggedIn(true)
             return null
         }).catch(error => {
             return error
@@ -51,7 +54,7 @@ function App(props) {
     )
 
     return (
-        <AuthContext.Provider value={{ authTokens, confirm: confirm, logout: logout }}>
+        <AuthContext.Provider value={{ authTokens, confirm: confirm, logout: logout, isLoggedIn: isLoggedIn }}>
             <Router>
                 <Switch>
                     <PrivateRoute exact path="/" component={GameList}/>
