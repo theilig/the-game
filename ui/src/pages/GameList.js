@@ -4,6 +4,7 @@ import axios from 'axios';
 import {Redirect, useParams} from "react-router";
 import GameListItem from "../components/GameListItem";
 import styled from "styled-components";
+import {Error} from "../components/AuthForm";
 
 const H2 = styled.h2`
     
@@ -29,7 +30,7 @@ const GameBlock = styled.li`
 `;
 
 function GameList() {
-    const { authTokens, setAuthTokens } = useAuth();
+    const { authTokens, isLoggedIn } = useAuth();
     const [ gameList, setGameList ] = useState({games:[]});
     const [ lastError, setLastError ] = useState( "" );
     const [ selectedGame, setSelectedGame ] = useState( 0 )
@@ -83,13 +84,15 @@ function GameList() {
                 setLastError("Could not confirm token");
             }
         } else {
-            fetchData()
-            const tick = setInterval(fetchData, 60000)
-            return (() => clearInterval(tick))
+            if (isLoggedIn) {
+                fetchData()
+                const tick = setInterval(fetchData, 60000)
+                return (() => clearInterval(tick))
+            }
         }
     }, [authTokens.token])
 
-    if (lastError) {
+    if (!isLoggedIn) {
         return (<Redirect to="/login" />);
     }
 
@@ -107,6 +110,7 @@ function GameList() {
                     <GameBlock key={game.gameId} onClick={() => {setSelectedGame(game.gameId)}}><GameListItem game={game} /></GameBlock>
                 ))}
             </GameListBlock>
+            { lastError && <Error>{lastError}</Error> }
         </div>
     )
 }

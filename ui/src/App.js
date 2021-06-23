@@ -17,7 +17,7 @@ function App(props) {
         existingTokens = {};
     }
     const [authTokens, setAuthTokens] = useState(existingTokens);
-    const [isLoggedIn, setIsLoggedIn] = useState(existingTokens != null)
+    const [isLoggedIn, setIsLoggedIn] = useState(existingTokens && existingTokens.tokens != null)
 
     const setTokens = (data) => {
         localStorage.setItem("tokens", JSON.stringify(data));
